@@ -8,8 +8,9 @@ from django.views.decorators.http import require_POST
 from automated_survey.models import QuestionResponse, Question
 
 
-@require_POST
+#@require_POST
 def save_response(request, survey_id, question_id):
+    print('save_responses')
     question = Question.objects.get(id=question_id)
 
     save_response_from_request(request, question)
@@ -22,6 +23,7 @@ def save_response(request, survey_id, question_id):
 
 
 def next_question_redirect(question_id, survey_id):
+    print('next_question_redirect')
     parameters = {'survey_id': survey_id, 'question_id': question_id}
     question_url = reverse('question', kwargs=parameters)
 
@@ -46,19 +48,28 @@ def goodbye(request):
 
 
 def save_response_from_request(request, question):
+    print('save_response_from_request')
     session_id = request.POST['MessageSid' if request.is_sms else 'CallSid']
+    print('session_id')
+    print(session_id)
     request_body = _extract_request_body(request, question.kind)
+    print('request_body')
+    print(request_body)
     phone_number = request.POST['From']
+    print(phone_number)
 
     response = QuestionResponse.objects.filter(question_id=question.id,
                                                call_sid=session_id).first()
+    print(response)
 
     if not response:
+        print("not respnse")
         QuestionResponse(call_sid=session_id,
                          phone_number=phone_number,
                          response=request_body,
                          question=question).save()
     else:
+        print("response save")
         response.response = request_body
         response.save()
 

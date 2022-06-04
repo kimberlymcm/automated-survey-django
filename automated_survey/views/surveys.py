@@ -2,10 +2,16 @@ from automated_survey.models import Survey, Question
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from twilio.twiml.voice_response import VoiceResponse
 from twilio.twiml.messaging_response import MessagingResponse
+
+# Have separate code running
+# phone_number, survey_id
+# def send_texts():
+#  for each row in phone_number, survey_id:
+#      
 
 
 @require_GET
@@ -46,18 +52,31 @@ def show_survey(request, survey_id):
     return HttpResponse(twiml_response, content_type='application/xml')
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 def redirects_twilio_request_to_proper_endpoint(request):
+    print("HELLOOOO!")
+    print(request.session)
+    print("EXISTS")
+    #print(request.session.exists())
+    #print(request.Session.objects.all())
+    print("GREAT")
+    #print(request.session['answering_question_id'])
+    print(request.session.get('answering_question_id', 'false'))
+    print("OKAY")
     answering_question = request.session.get('answering_question_id')
+    print("YEPPERS")
     if not answering_question:
+        print('1')
         first_survey = Survey.objects.first()
         redirect_url = reverse('survey',
                                kwargs={'survey_id': first_survey.id})
     else:
+        print('2')
         question = Question.objects.get(id=answering_question)
         redirect_url = reverse('save_response',
                                kwargs={'survey_id': question.survey.id,
                                        'question_id': question.id})
+        print(redirect_url)
     return HttpResponseRedirect(redirect_url)
 
 

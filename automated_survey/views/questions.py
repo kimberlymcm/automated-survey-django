@@ -9,21 +9,32 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def show_question(request, survey_id, question_id):
+    print('show_question')
     question = Question.objects.get(id=question_id)
     if request.is_sms:
         twiml = sms_question(question)
     else:
         twiml = voice_question(question)
+    print(twiml)
+    print(request.session)
+    print("GREEEEEN")
 
     request.session['answering_question_id'] = question.id
+    print(request.session.keys())
+    print(request.session.items())
+    print("BLUE")
+    print(request.session['answering_question_id'])
+    print(question.id)
     return HttpResponse(twiml, content_type='application/xml')
 
 
 def sms_question(question):
+    print('sms_question')
     twiml_response = MessagingResponse()
 
     twiml_response.message(question.body)
     twiml_response.message(SMS_INSTRUCTIONS[question.kind])
+    print(twiml_response)
 
     return twiml_response
 
@@ -61,6 +72,7 @@ VOICE_INSTRUCTIONS = {
 
 
 def save_response_url(question):
+    print('save_response_url')
     return reverse('save_response',
                    kwargs={'survey_id': question.survey.id,
                            'question_id': question.id})
